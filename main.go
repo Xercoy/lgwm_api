@@ -6,10 +6,11 @@ import (
 )
 
 func main() {
+	port := ":8080"
 	router := NewRouter()
 
-	router.HandleFunc("/", Index)
+	log.Printf("Starting API Server on %s...", port[1:])
 
-	// Listen on port 8080
-	log.Fatal(http.ListenAndServe(":8080", router))
+	// Listen on port.
+	log.Fatal(http.ListenAndServe(port, router))
 }

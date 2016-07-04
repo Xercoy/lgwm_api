@@ -38,4 +38,16 @@ var routes = Routes{
 		"/",
 		Index,
 	},
+	Route{
+		"Posts",
+		"GET",
+		"/posts",
+		PostsIndex,
+	},
+	Route{
+		"GET Post",
+		"GET",
+		"/posts/{id}",
+		GETPost,
+	},
 }
