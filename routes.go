@@ -32,22 +32,50 @@ func NewRouter() *mux.Router {
 }
 
 var routes = Routes{
+	// Index, displays information.
 	Route{
 		"Index",
 		"GET",
 		"/",
 		Index,
 	},
+	// Get a list of all the Posts.
 	Route{
 		"Posts",
 		"GET",
 		"/posts",
-		PostsIndex,
+		PostHandler,
 	},
+	// CREATE
+	// Create a new Post.
+	Route{
+		"CREATE Post",
+		"POST",
+		"/posts",
+		PostHandler,
+	},
+	// READ
+	// Retrieve a specific Post.
 	Route{
 		"GET Post",
 		"GET",
 		"/posts/{id}",
-		GETPost,
+		PostHandler,
+	},
+	// UPDATE
+	// Update a specific Post.
+	Route{
+		"UPDATE Post",
+		"PUT",
+		"/posts/{id}",
+		PostHandler,
+	},
+	// DELETE
+	// Delete a particular post.
+	Route{
+		"DELETE Post",
+		"DELETE",
+		"/posts/{id}",
+		PostHandler,
 	},
 }

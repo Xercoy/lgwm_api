@@ -17,21 +17,43 @@ POSTS/{id} - GET  - Retrieves a new blog post.
 `)
 }
 
-func PostsIndex(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(Posts)
-}
+func PostHandler(w http.ResponseWriter, r *http.Request) {
 
-func GETPost(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
 	id, _ := strconv.Atoi(vars["id"])
 
-	for _, p := range Posts {
-		if p.ID == id {
-			json.NewEncoder(w).Encode(p)
-			return
+	if id == 0 { // /posts
+		switch r.Method {
+
+		// Show all posts
+		case "GET":
+			json.NewEncoder(w).Encode(Posts)
+
+		// Create a new post
+		case "POST":
+			fmt.Fprintf(w, "Created Post")
 		}
 	}
 
-	fmt.Fprintln(w, "Can't find post. Sorry.\n")
+	if id != 0 { // /posts/{id}
+		switch r.Method {
+
+		// Show post with the particular matching ID.
+		case "GET":
+			for _, p := range Posts {
+				if p.ID == id {
+					json.NewEncoder(w).Encode(p)
+					return
+				}
+			}
+		case "PUT":
+			fmt.Fprintf(w, "Updated Post")
+
+		case "DELETE":
+			fmt.Fprintf(w, "Deleted Post")
+		default:
+			fmt.Fprintln(w, "Can't find post. Sorry.\n")
+		}
+
+	}
 }

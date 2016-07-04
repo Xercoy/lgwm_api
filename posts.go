@@ -8,7 +8,20 @@ type Post struct {
 	Date   time.Time
 	Author string
 	ID     int
-	tag    string
+	Tag    string
+}
+
+func NewPost(t, b, a, ta string, d time.Time, i int) *Post {
+	p := Post{
+		Title:  t,
+		Body:   b,
+		Date:   d,
+		Author: a,
+		ID:     i,
+		Tag:    ta,
+	}
+
+	return &p
 }
 
 var Posts = []Post{
