@@ -5,16 +5,16 @@ import (
 	"net/http"
 )
 
-var db Database
+var global_db Database
 
 func main() {
 	port := ":8080"
 	router := NewRouter()
 
-	db = NewBoltDB("lgwm.db", 0666, nil)
-	defer db.Close()
+	global_db = NewBoltDB("lgwm.db", "db_vars", 0777, nil)
+	defer global_db.Close()
 
-	if err := db.Open(); err != nil {
+	if err := global_db.Open(); err != nil {
 		log.Fatalf("%v", err)
 	}
 
