@@ -1,18 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"encoding/binary"
+	"encoding/json"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/boltdb/bolt"
 )
-
-type Database interface {
-	Open() error
-	Close() error
-}
 
 type BoltDB struct {
 	DB      *bolt.DB
@@ -20,7 +15,6 @@ type BoltDB struct {
 	Mode    os.FileMode
 	Options *bolt.Options
 	Bucket  string
-	IDCount int
 }
 
 func NewBoltDB(path, bucket string, mode os.FileMode, options *bolt.Options) *BoltDB {
@@ -40,50 +34,106 @@ func (b *BoltDB) Close() error {
 func (b *BoltDB) Open() error {
 	var err error
 
-	db, err := bolt.Open(b.Path, b.Mode, b.Options)
+	b.DB, err = bolt.Open(b.Path, b.Mode, b.Options)
 	if err != nil {
 		return err
 	}
 
+	//b.DB = db
+
+	err = b.PrepareDB()
+
+	if b.DB == nil {
+		log.Printf("DB is nil")
+	} else {
+		log.Printf("DB is not nil: %v", b)
+	}
+
+	if err != nil || b.DB == nil {
+		return err
+	}
+	return err
+}
+
+func (b *BoltDB) PrepareDB() error {
+	var err error
+
 	// Create bucket if it doesn't exist.
-	db.Update(func(tx *bolt.Tx) error {
+	err = b.DB.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket([]byte(b.Bucket))
 		if err != nil {
-			return fmt.Errorf("Bucket read/create error: %s", err)
+			//			return fmt.Errorf("Bucket read/create error: %s", err)
 		}
 
 		return nil
 	})
 
-	// Get/Set DB specific statistics and variables.
-	err = db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(b.Bucket))
-		value := bucket.Get([]byte("id_count"))
+	if err != nil {
+		return err
+	}
 
-		//		log.Println("Database ID empty. Starting at 0.", value)
+	return nil
+}
 
-		if value == nil {
-			b.IDCount = 0
-			log.Println("Database ID empty. Starting at 0.", value)
-		} else {
-			// Case the byte slice to a string, conver to integer.
-			valueAsInt, err := strconv.Atoi((string)(value))
+func GetAllPosts(db *BoltDB) ([]Post, error) {
+	var err error
+
+	var posts []Post
+
+	err = db.DB.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(db.Bucket))
+
+		cursor := bucket.Cursor()
+
+		for k, value := cursor.First(); k != nil; k, value = cursor.Next() {
+			var p Post
+
+			err := json.Unmarshal(value, &p)
 			if err != nil {
 				return err
 			}
 
-			b.IDCount = valueAsInt
-			log.Println("Database ID count is %d.", value)
+			posts = append(posts, p)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return err
+		return nil, err
+	}
+	log.Printf("POSTS=%v", posts)
+
+	return posts, nil
+}
+
+func AddPost(db *BoltDB, bucket string, newPost Post) error {
+	err := db.DB.Update(func(tx *bolt.Tx) error {
+
+		log.Println(db.Bucket)
+
+		bucket := tx.Bucket([]byte(db.Bucket))
+
+		id, _ := bucket.NextSequence()
+		newPost.ID = int(id)
+
+		// Marshal data into bytes.
+		buf, err := json.Marshal(newPost)
+		if err != nil {
+			return err
+		}
+
+		return bucket.Put(itob(newPost.ID), buf)
+	})
+	if err != nil {
+		log.Fatalf("%v", err)
 	}
 
-	b.DB = db
+	return nil
+}
 
-	return err
+func itob(v int) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
 }

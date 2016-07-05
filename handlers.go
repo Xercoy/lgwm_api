@@ -27,11 +27,29 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Show all posts
 		case "GET":
-			json.NewEncoder(w).Encode(Posts)
-
+			posts, err := GetAllPosts(global_db)
+			if err != nil {
+				fmt.Fprintf(w, "%v", err)
+			} else {
+				json.NewEncoder(w).Encode(posts)
+			}
 		// Create a new post
 		case "POST":
-			fmt.Fprintf(w, "Created Post")
+			var p Post
+
+			err := json.NewDecoder(r.Body).Decode(&p)
+			if err != nil {
+				// Received.
+				fmt.Fprintf(w, "%v", err)
+			}
+
+			err = AddPost(global_db, global_db.Bucket, p)
+			if err != nil {
+				// Received.
+				fmt.Fprintf(w, "%v", err)
+			} else {
+				json.NewEncoder(w).Encode(p)
+			}
 		}
 	}
 
@@ -40,12 +58,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Show post with the particular matching ID.
 		case "GET":
-			for _, p := range Posts {
-				if p.ID == id {
-					json.NewEncoder(w).Encode(p)
-					return
-				}
-			}
+
 		case "PUT":
 			fmt.Fprintf(w, "Updated Post")
 
