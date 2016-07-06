@@ -10,7 +10,7 @@ import (
 
 	"github.com/boltdb/bolt"
 
-	lgwm "github.com/xercoy/lgwm-api"
+	lgwm "github.com/xercoy/lgwm_api"
 	reap "github.com/xercoy/reaper"
 )
 
@@ -37,10 +37,7 @@ func main() {
 		log.Fatalf("%v\n", err)
 	}
 
-	posts, err := gi.GetPosts()
-	if err != nil {
-		log.Fatalf("%v\n", err)
-	}
+	posts := gi.GetPublishedPosts()
 
 	for id, p := range posts {
 		log.Printf("Importing Post %d, '%s'", p.ID, p.Title)

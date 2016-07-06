@@ -77,10 +77,10 @@ func (b *BoltDB) PrepareDB() error {
 	return nil
 }
 
-func GetAllPosts(db *BoltDB) ([]Post, error) {
+func GetAllPosts(db *BoltDB) (interface{}, error) {
 	var err error
 
-	var posts []Post
+	var posts []interface{}
 
 	err = db.DB.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(db.Bucket))
@@ -88,7 +88,7 @@ func GetAllPosts(db *BoltDB) ([]Post, error) {
 		cursor := bucket.Cursor()
 
 		for k, value := cursor.First(); k != nil; k, value = cursor.Next() {
-			var p Post
+			var p interface{}
 
 			err := json.Unmarshal(value, &p)
 			if err != nil {
