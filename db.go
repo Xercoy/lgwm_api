@@ -1,4 +1,4 @@
-package main
+package lgwm_api
 
 import (
 	"encoding/binary"
@@ -8,6 +8,8 @@ import (
 
 	"github.com/boltdb/bolt"
 )
+
+var GlobalDB *BoltDB
 
 type BoltDB struct {
 	DB      *bolt.DB

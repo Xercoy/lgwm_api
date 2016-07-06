@@ -5,9 +5,13 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
+
+	lgwm "github.com/xercoy/lgwm-api"
+	reap "github.com/xercoy/reaper"
 )
 
 func main() {
@@ -16,9 +20,9 @@ func main() {
 
 	var err error
 
-	db := NewBoltDB(databaseName, bucketName, 0777, &bolt.Options{Timeout: 1 * time.Second})
+	db := lgwm.NewBoltDB(databaseName, bucketName, 0777, &bolt.Options{Timeout: 1 * time.Second})
 
-	err := db.Open()
+	err = db.Open()
 	defer db.Close()
 	if err != nil {
 		log.Fatalf("%v\n", err)
@@ -28,7 +32,7 @@ func main() {
 
 	log.Printf("Retrieving json blog posts from stdin...")
 
-	gi, err := reaper.Import(os.Stdin)
+	gi, err := reap.Import(os.Stdin)
 	if err != nil {
 		log.Fatalf("%v\n", err)
 	}
@@ -46,7 +50,7 @@ func main() {
 			log.Fatalf("%v\n", err)
 		}
 
-		err := AddPost(db, bucketName, id, postAsBytes)
+		err = AddPost(db, bucketName, strconv.Itoa(id), postAsBytes)
 		if err != nil {
 			log.Fatalf("%v\n", err)
 		}
@@ -55,14 +59,13 @@ func main() {
 	log.Printf("Import Completed.")
 }
 
-func AddPost(db *BoltDB, bucketName string, key string, value []byte) error {
-	return db.Update(func(tx *bolt.Tx) error {
+func AddPost(db *lgwm.BoltDB, bucketName string, key string, value []byte) error {
+	return db.DB.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))
 
 		id, _ := bucket.NextSequence()
-		newPost.ID = int(id)
 
-		return bucket.Put(itob(id), value)
+		return bucket.Put(itob(int(id)), value)
 	})
 }
 

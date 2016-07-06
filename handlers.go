@@ -1,4 +1,4 @@
-package main
+package lgwm_api
 
 import (
 	"encoding/json"
@@ -27,7 +27,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Show all posts
 		case "GET":
-			posts, err := GetAllPosts(global_db)
+			posts, err := GetAllPosts(GlobalDB)
 			if err != nil {
 				fmt.Fprintf(w, "%v", err)
 			} else {
@@ -43,7 +43,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, "%v", err)
 			}
 
-			err = AddPost(global_db, global_db.Bucket, p)
+			err = AddPost(GlobalDB, GlobalDB.Bucket, p)
 			if err != nil {
 				// Received.
 				fmt.Fprintf(w, "%v", err)

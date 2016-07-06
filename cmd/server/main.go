@@ -6,18 +6,17 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
+	"github.com/xercoy/lgwm_api"
 )
-
-var global_db *BoltDB
 
 func main() {
 	port := ":8080"
-	router := NewRouter()
+	router := lgwm_api.NewRouter()
 
-	global_db = NewBoltDB("lgwm.db", "db_vars", 0777, &bolt.Options{Timeout: 1 * time.Second})
+	lgwm.GlobalDB = lgwm_api.NewBoltDB("lgwm.db", "db_vars", 0777, &bolt.Options{Timeout: 1 * time.Second})
 	//	defer db.Close()
 
-	if err := global_db.Open(); err != nil {
+	if err := lgwm_api.GlobalDB.Open(); err != nil {
 		log.Fatalf("%v", err)
 	}
 

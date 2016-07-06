@@ -1,4 +1,4 @@
-package main
+package lgwm_api
 
 import (
 	"net/http"
